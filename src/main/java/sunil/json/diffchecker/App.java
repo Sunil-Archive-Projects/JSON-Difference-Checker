@@ -29,7 +29,7 @@ public class App
     	int uid_index = 0;
     	int slash_index = 0;
     	String diff_path = "";
-    	String id_field = "_id";
+    	String id_field = "encounterUID";
     	
     	ObjectMapper jackson = new ObjectMapper();
     	jackson.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
@@ -45,6 +45,8 @@ public class App
         
     	JsonNode diff_expectedValues = JsonDiff.asJson(actual_json, expected_json);
     	JsonNode diff_actualValues = JsonDiff.asJson(expected_json, actual_json);
+    	
+    	System.out.println("\n --------------------JSON Compare RESULTS--------------------------- \n");
 	
     	//If there are no differences between the JSONs then Quit
     	if(diff_expectedValues.size() == 0)
@@ -65,13 +67,13 @@ public class App
     		if (slash_index != -1)
     		{
     			uid_index = Integer.parseInt(diff_path.substring(0,slash_index));
-    			System.out.println("Difference at Record Number : "+uid_index);
     			System.out.println(id_field+" : "+actual_json.get(uid_index).findValuesAsText(id_field).toString());
-    			System.out.println(actual_json.get(uid_index).findValuesAsText(id_field).getClass().getName());
     		}
     		
     		System.out.println("\n");
     	}
+    	
+    	System.out.println("\n ------------------------------------------------------------------- \n");
 
 	}
 	
@@ -80,10 +82,6 @@ public class App
  	    JSONArray jsonArray = new JSONArray(JSONString);
  	    JSONArray sortedJsonArray = new JSONArray();
  	    
- 	    System.out.println("\n\nBefore : \n" + JSONString);
- 	    
-
-
  	    List<JSONObject> jsonValues = new ArrayList<JSONObject>();
  	    for (int i = 0; i < jsonArray.length(); i++) 
  	    {
@@ -115,8 +113,6 @@ public class App
  	        sortedJsonArray.put(jsonValues.get(i));
  	    }
  	    
- 	    
- 	    System.out.println("After : \n" + sortedJsonArray.toString());
  	    
 		return sortedJsonArray.toString();
 		
