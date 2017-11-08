@@ -3,32 +3,46 @@ package sunil.json.diffchecker;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.flipkart.zjsonpatch.JsonDiff;
-
 
 public class App 
 {
-    public static void main( String[] args ) throws JsonProcessingException, IOException
-    {
-    	int index = 0;
+
+	public static void JSONDifferenceChecker() throws IOException
+	{
+		int index = 0;
     	int uid_index = 0;
     	int slash_index = 0;
     	String diff_path = "";
     	String id_field = "_id";
     	
     	ObjectMapper jackson = new ObjectMapper();
-    	
+    	jackson.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+
     	byte[] actual_json_file = Files.readAllBytes(Paths.get("./actual.json"));
     	byte[] expected_json_file = Files.readAllBytes(Paths.get("./expected.json")); 
-    	
+
     	JsonNode actual_json = jackson.readTree(actual_json_file); 
     	JsonNode expected_json = jackson.readTree(expected_json_file);
     	
+    	actual_json = jackson.readTree(JSONRecordsSorter(actual_json.toString(), id_field));
+    	expected_json = jackson.readTree(JSONRecordsSorter(expected_json.toString(), id_field));
+        
     	JsonNode diff_expectedValues = JsonDiff.asJson(actual_json, expected_json);
     	JsonNode diff_actualValues = JsonDiff.asJson(expected_json, actual_json);
 	
@@ -52,10 +66,66 @@ public class App
     		{
     			uid_index = Integer.parseInt(diff_path.substring(0,slash_index));
     			System.out.println("Difference at Record Number : "+uid_index);
-    			System.out.println(id_field+" : "+actual_json.get(uid_index).findValuesAsText(id_field).toString());    			
+    			System.out.println(id_field+" : "+actual_json.get(uid_index).findValuesAsText(id_field).toString());
+    			System.out.println(actual_json.get(uid_index).findValuesAsText(id_field).getClass().getName());
     		}
     		
     		System.out.println("\n");
     	}
+
+	}
+	
+	public static String JSONRecordsSorter(String JSONString, final String key)
+	{
+ 	    JSONArray jsonArray = new JSONArray(JSONString);
+ 	    JSONArray sortedJsonArray = new JSONArray();
+ 	    
+ 	    System.out.println("\n\nBefore : \n" + JSONString);
+ 	    
+
+
+ 	    List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+ 	    for (int i = 0; i < jsonArray.length(); i++) 
+ 	    {
+ 	        jsonValues.add(jsonArray.getJSONObject(i));
+ 	    }
+ 	    
+ 	    Collections.sort( jsonValues, new Comparator<JSONObject>() 
+ 	    {
+ 	        public int compare(JSONObject a, JSONObject b) 
+ 	        {
+ 	            String valA = new String();
+ 	            String valB = new String();
+ 	            try 
+ 	            {
+ 	                valA = (String) a.get(key);
+ 	                valB = (String) b.get(key);
+ 	            } 
+ 	            catch (JSONException e) 
+ 	            {
+ 	                System.out.println(e.toString());
+ 	            }
+ 	            return valA.compareTo(valB);
+ 	        }
+ 	    });
+ 	    
+
+ 	    for (int i = 0; i < jsonArray.length(); i++) 
+ 	    {
+ 	        sortedJsonArray.put(jsonValues.get(i));
+ 	    }
+ 	    
+ 	    
+ 	    System.out.println("After : \n" + sortedJsonArray.toString());
+ 	    
+		return sortedJsonArray.toString();
+		
+	}
+	
+    public static void main( String[] args ) throws JsonProcessingException, IOException
+    {
+    	JSONDifferenceChecker();
+
     }
+	
 }
