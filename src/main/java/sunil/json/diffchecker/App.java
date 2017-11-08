@@ -55,6 +55,15 @@ public class App
     		return;
     	}
     	
+    	if(actual_json.size() != expected_json.size())
+    	{
+    		System.out.println("The Number of Records between the Actual and the Expected JSONs are not matching.");
+    		System.out.println("Expected JSON has " + expected_json.size() + " records.");
+    		System.out.println("Actual JSON has " + actual_json.size() + " records.");
+    	}
+    	
+    	System.out.println("Expected JSON is NOT matching with the Actual JSON\n");
+    	
     	//print UID and the differences between the JSONs
     	for(index = 0; index < diff_expectedValues.size() ; index++)
     	{
